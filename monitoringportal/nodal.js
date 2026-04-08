@@ -8,6 +8,21 @@ function resolveUploadUrl(path) {
   return s.startsWith("/") ? s : "/" + s;
 }
 
+function requireSecureCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("Camera is not supported in this browser.");
+    return false;
+  }
+  if (!window.isSecureContext) {
+    alert(
+      "Camera and GPS stamping require HTTPS on this server. Plain http:// works only on localhost for development.\n\n" +
+        "Serve the app with SSL (https://) or use a reverse proxy with a certificate."
+    );
+    return false;
+  }
+  return true;
+}
+
 // Form Submit Event
 document.getElementById("nodalForm").addEventListener("submit", async function (e) {
     e.preventDefault(); // prevent page reload
@@ -493,10 +508,17 @@ let currentLocation = "Fetching location...";
 async function openCamera() {
     const video = document.getElementById("video");
 
-    stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
+    if (!requireSecureCamera()) return;
 
-    getLocation();
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+
+        getLocation();
+    } catch (err) {
+        console.error(err);
+        alert("Camera error: " + (err.message || String(err)));
+    }
 }
 
 // ==============================
@@ -1139,12 +1161,19 @@ async function openCameraInline(id, index) {
 
     const video = document.getElementById(`video-${id}`);
 
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
+    if (!requireSecureCamera()) return;
 
-    rowStreams[id] = stream;
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
 
-    getLocation();
+        rowStreams[id] = stream;
+
+        getLocation();
+    } catch (err) {
+        console.error(err);
+        alert("Camera error: " + (err.message || String(err)));
+    }
 }
 
 function captureInline(id, index) {

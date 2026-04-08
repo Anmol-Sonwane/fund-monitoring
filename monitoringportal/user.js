@@ -8,6 +8,22 @@ function resolveUploadUrl(path) {
   return s.startsWith("/") ? s : "/" + s;
 }
 
+/** getUserMedia + geolocation need a secure context on the public internet (HTTPS). http://localhost is exempt. */
+function requireSecureCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("Camera is not supported in this browser.");
+    return false;
+  }
+  if (!window.isSecureContext) {
+    alert(
+      "Camera and GPS stamping require HTTPS on this server. Plain http:// works only on localhost for development.\n\n" +
+        "Serve the app with SSL (https://) or use a reverse proxy with a certificate (Let’s Encrypt, etc.)."
+    );
+    return false;
+  }
+  return true;
+}
+
 // ================================
 // Initialize DOM Events
 // ================================
@@ -1079,10 +1095,7 @@ async function openMonthlyCamera() {
 
     try {
 
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert("Camera not supported in this browser");
-            return;
-        }
+        if (!requireSecureCamera()) return;
 
         monthlyStream = await navigator.mediaDevices.getUserMedia({
             video: true
@@ -1191,6 +1204,7 @@ async function openEditMonthlyCamera(index, rowId) {
     const video = document.getElementById(`edit-video-${index}-${rowId}`);
 
     try {
+        if (!requireSecureCamera()) return;
         const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" }
         });
@@ -1778,11 +1792,22 @@ document.addEventListener("click", function (e) {
 
 async function openYearlyCamera() {
 
-    yearlyStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
-    });
+    if (!requireSecureCamera()) return;
 
-    document.getElementById("yearlyVideo").srcObject = yearlyStream;
+    try {
+        yearlyStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        });
+
+        document.getElementById("yearlyVideo").srcObject = yearlyStream;
+    } catch (err) {
+        console.error(err);
+        if (err.name === "NotAllowedError") {
+            alert("Camera permission denied.");
+        } else {
+            alert("Camera error: " + (err.message || String(err)));
+        }
+    }
 }
 
 function captureYearlyPhoto(index) {
@@ -1866,15 +1891,22 @@ async function openYearEditCamera(yearSno, index) {
 
     stopAllYearEditCameras(); // stop previous cameras
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
-    });
+    if (!requireSecureCamera()) return;
 
-    editYearlyStreams[`${yearSno}-${index}`] = stream;
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        });
 
-    const video = document.getElementById(`year-edit-video-${yearSno}-${index}`);
-    video.srcObject = stream;
-    video.style.display = "block";
+        editYearlyStreams[`${yearSno}-${index}`] = stream;
+
+        const video = document.getElementById(`year-edit-video-${yearSno}-${index}`);
+        video.srcObject = stream;
+        video.style.display = "block";
+    } catch (err) {
+        console.error(err);
+        alert("Camera error: " + (err.message || String(err)));
+    }
 }
 
 function captureYearEditPhoto(yearSno, index) {
@@ -2560,11 +2592,18 @@ document.addEventListener("click", function (e) {
 
 async function openInfraCamera() {
 
-    infraStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
-    });
+    if (!requireSecureCamera()) return;
 
-    document.getElementById("infraVideo").srcObject = infraStream;
+    try {
+        infraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        });
+
+        document.getElementById("infraVideo").srcObject = infraStream;
+    } catch (err) {
+        console.error(err);
+        alert("Camera error: " + (err.message || String(err)));
+    }
 }
 
 async function captureInfraPhoto(index) {
@@ -2650,15 +2689,22 @@ async function openInfraEditCamera(id, index) {
 
     stopAllInfraEditCameras(); // stop previous
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
-    });
+    if (!requireSecureCamera()) return;
 
-    editInfraStreams[`${id}-${index}`] = stream;
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        });
 
-    const video = document.getElementById(`infra-edit-video-${id}-${index}`);
-    video.srcObject = stream;
-    video.style.display = "block";
+        editInfraStreams[`${id}-${index}`] = stream;
+
+        const video = document.getElementById(`infra-edit-video-${id}-${index}`);
+        video.srcObject = stream;
+        video.style.display = "block";
+    } catch (err) {
+        console.error(err);
+        alert("Camera error: " + (err.message || String(err)));
+    }
 }
 function captureInfraEditPhoto(id, index) {
 
