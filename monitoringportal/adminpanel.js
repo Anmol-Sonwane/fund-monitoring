@@ -1,4 +1,4 @@
-const BASE_URL = "https://localhost:7117/api/Login"; // change port if needed
+const BASE_URL = "/api/Login";
 
 // Get JWT Token from login (stored in localStorage)
 function getToken() {

@@ -5,7 +5,16 @@ let lastModalSource = "monthly";
 // tracks whether user is in monthly/yearly
 let selectedOrganizationName = ""; // stores currently selected organization
  
-const apiBase = "https://localhost:7117";
+const apiBase = "";
+
+function resolveUploadUrl(path) {
+  if (path == null || path === "") return "";
+  const s = String(path).trim();
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  if (s.startsWith("/")) return s;
+  const prefix = (apiBase || "").replace(/\/$/, "");
+  return prefix ? `${prefix}/${s}` : `/${s}`;
+}
 // ================================
 // PAGE LOAD
 // ================================
@@ -37,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ================================
 async function loadTotals() {
     try {
-        const response = await fetch("https://localhost:7117/api/Calculation/total-summary");
+        const response = await fetch("/api/Calculation/total-summary");
         if (!response.ok) throw new Error("Failed to fetch totals");
 
         const data = await response.json();
@@ -134,7 +143,7 @@ async function loadMonthlySummary() {
     const month = document.getElementById("monthFilter")?.value || "";
     const year = document.getElementById("yearFilter")?.value || "";
 
-    let url = "https://localhost:7117/api/MonthlyCalculation/GetTotalByOrganizationTypeMY";
+    let url = "/api/MonthlyCalculation/GetTotalByOrganizationTypeMY";
 
     const params = [];
     if (month) params.push(`month=${encodeURIComponent(month)}`);
@@ -179,7 +188,7 @@ async function loadYearlySummary() {
     try {
         const year = document.getElementById("yearFilter2").value;
 
-        let url = "https://localhost:7117/api/YearlyCalculation/GetTotalByOrganizationTypeY";
+        let url = "/api/YearlyCalculation/GetTotalByOrganizationTypeY";
         if (year) url += `?year=${encodeURIComponent(year)}`;
 
         const res = await fetch(url);
@@ -231,7 +240,7 @@ function openOrgNameModal(orgType, source) {
 
 async function loadOrgNameSummary(orgType, source) {
     try {
-        const apiUrl = `https://localhost:7117/api/${source === "monthly" ? "MonthlyCalculation" : "YearlyCalculation"}/GetOrganizationsByType?orgType=${encodeURIComponent(orgType)}`;
+        const apiUrl = `/api/${source === "monthly" ? "MonthlyCalculation" : "YearlyCalculation"}/GetOrganizationsByType?orgType=${encodeURIComponent(orgType)}`;
         const res = await fetch(apiUrl);
         if (!res.ok) throw new Error("Failed to fetch organization names");
 
@@ -272,7 +281,7 @@ async function openMonthlyOrgDetails(orgName) {
     tbody.innerHTML = "<tr><td colspan='9'>Loading...</td></tr>";
 
     try {
-        const res = await fetch(`https://localhost:7117/api/MonthlyCalculation/GetAllByOrganizationName?organizationName=${encodeURIComponent(orgName)}`);
+        const res = await fetch(`/api/MonthlyCalculation/GetAllByOrganizationName?organizationName=${encodeURIComponent(orgName)}`);
         const data = await res.json();
 
        tbody.innerHTML = data.length ? data.map((item, index) => {
@@ -288,9 +297,9 @@ for (let i = 1; i <= 10; i++) {
     if (photo) {
         photoDropdown += `
             <div class="photo-card">
-                <img src="${apiBase + photo}" 
+                <img src="${resolveUploadUrl(photo)}" 
      class="photo-thumb" 
-     onclick="openImageModal('${apiBase + photo}')"/>
+     onclick='openImageModal(${JSON.stringify(resolveUploadUrl(photo))})'/>
                 <div class="photo-remark">${remark || "No Remark"}</div>
             </div>
         `;
@@ -330,7 +339,7 @@ async function openYearlyOrgDetails(orgName) {
     tbody.innerHTML = "<tr><td colspan='8'>Loading...</td></tr>";
 
     try {
-        const res = await fetch(`https://localhost:7117/api/YearlyCalculation/GetAllByOrganizationName?organizationName=${encodeURIComponent(orgName)}`);
+        const res = await fetch(`/api/YearlyCalculation/GetAllByOrganizationName?organizationName=${encodeURIComponent(orgName)}`);
         const data = await res.json();
 
 		tbody.innerHTML = data.length ? data.map((item, index) => {
@@ -346,9 +355,9 @@ for (let i = 1; i <= 10; i++) {
     if (photo) {
         photoDropdown += `
             <div class="photo-card">
-                <img src="${apiBase + photo}" 
+                <img src="${resolveUploadUrl(photo)}" 
      class="photo-thumb" 
-     onclick="openImageModal('${apiBase + photo}')"/>
+     onclick='openImageModal(${JSON.stringify(resolveUploadUrl(photo))})'/>
                 <div class="photo-remark">${remark || "No Remark"}</div>
             </div>
         `;
@@ -403,7 +412,7 @@ async function openInfoModal() {
 
     try {
         const response = await fetch(
-    `https://localhost:7117/api/Information/organization?name=${encodeURIComponent(orgName)}`
+    `/api/Information/organization?name=${encodeURIComponent(orgName)}`
 );
 
 
@@ -559,7 +568,7 @@ async function loadInfraSummary() {
     const month = document.getElementById("infraMonthFilter")?.value || "";
     const year = document.getElementById("infraYearFilter")?.value || "";
 
-    let url = "https://localhost:7117/api/MonthlyInfrastructure/GetTotalByOrganizationType";
+    let url = "/api/MonthlyInfrastructure/GetTotalByOrganizationType";
 
     const params = [];
     if (month) params.push(`month=${encodeURIComponent(month)}`);
@@ -615,7 +624,7 @@ function openInfraOrgNameModal(orgType) {
 async function loadInfraOrgNames(orgType) {
     try {
         const res = await fetch(
-            `https://localhost:7117/api/MonthlyInfrastructure/GetOrganizationsByType?orgType=${encodeURIComponent(orgType)}`
+            `/api/MonthlyInfrastructure/GetOrganizationsByType?orgType=${encodeURIComponent(orgType)}`
         );
 
         const data = await res.json();
@@ -655,7 +664,7 @@ async function openInfraDetails(orgName) {
 
     try {
         const res = await fetch(
-            `https://localhost:7117/api/MonthlyInfrastructure/GetByOrganizationName?organizationName=${encodeURIComponent(orgName)}`
+            `/api/MonthlyInfrastructure/GetByOrganizationName?organizationName=${encodeURIComponent(orgName)}`
         );
 
         const data = await res.json();
@@ -673,9 +682,9 @@ async function openInfraDetails(orgName) {
                     if (photo) {
                         photoDropdown += `
                             <div class="photo-card">
-                                <img src="${apiBase + photo}" 
-									class="photo-thumb" 
-									onclick="openImageModal('${apiBase + photo}')"/>
+                                <img src="${resolveUploadUrl(photo)}"
+									class="photo-thumb"
+									onclick='openImageModal(${JSON.stringify(resolveUploadUrl(photo))})'/>
                                 <div class="photo-remark">${remark || "No Remark"}</div>
                             </div>
                         `;

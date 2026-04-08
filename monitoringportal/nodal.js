@@ -1,5 +1,12 @@
-const BASE_URL = "https://localhost:7117/api/Nodel"; 
-const BASE = "https://localhost:7117/api/Nodelentry";// change if needed
+const BASE_URL = "/api/Nodel";
+const BASE = "/api/Nodelentry";
+
+/** DB returns /uploads/... — do not prefix with "/", or the browser resolves //uploads/... incorrectly. */
+function resolveUploadUrl(path) {
+  if (path == null || path === "") return "";
+  const s = String(path).trim();
+  return s.startsWith("/") ? s : "/" + s;
+}
 
 // Form Submit Event
 document.getElementById("nodalForm").addEventListener("submit", async function (e) {
@@ -67,7 +74,7 @@ document.getElementById("importBtn").addEventListener("click", async function ()
     formData.append("file", file);
 
     try {
-        const response = await fetch("https://localhost:7117/api/Nodel/ImportExcel", {
+        const response = await fetch("/api/Nodel/ImportExcel", {
             method: "POST",
             body: formData
         });
@@ -85,7 +92,7 @@ document.getElementById("importBtn").addEventListener("click", async function ()
     }
 });
 
-const VIEW_API = "https://localhost:7117/api/Nodel";
+const VIEW_API = "/api/Nodel";
 
 // ================= OPEN VIEW MODAL =================
 async function openviewNodalModal() {
@@ -249,7 +256,7 @@ async function saveRow(btn, id) {
         totalSeat: parseInt(inputs[3].value)
     };
 
-    const response = await fetch(`https://localhost:7117/api/Nodel/Update/${id}`, {
+    const response = await fetch(`/api/Nodel/Update/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -885,7 +892,7 @@ function renderViewTable(data) {
     ${
         item.photo1 
         ? `<img 
-                src="${IMAGE_BASE + item.photo1}" 
+                src="${resolveUploadUrl(item.photo1)}" 
                 width="80" 
                 height="60"
                 style="object-fit:cover; border-radius:5px; cursor:pointer;"
@@ -902,7 +909,7 @@ function renderViewTable(data) {
     ${
         item.photo2 
         ? `<img 
-                src="${IMAGE_BASE + item.photo2}" 
+                src="${resolveUploadUrl(item.photo2)}" 
                 width="80" 
                 height="60"
                 style="object-fit:cover; border-radius:5px; cursor:pointer;"
@@ -927,7 +934,6 @@ function renderViewTable(data) {
     viewTableSection.innerHTML = html;
 }
  
-const IMAGE_BASE = "https://localhost:7117/";
 function viewImage(fileName) {
 
     const modalHtml = `
@@ -943,7 +949,7 @@ function viewImage(fileName) {
     " onclick="this.remove()">
 
         <img 
-            src="${IMAGE_BASE + fileName}" 
+            src="${resolveUploadUrl(fileName)}" 
             style="max-width:90%; max-height:90%; border:5px solid white;"
             onerror="this.src='https://via.placeholder.com/300?text=No+Image'"
         >
@@ -979,7 +985,7 @@ function openFullImage(fileName) {
         " onclick="this.parentElement.remove()">✖</span>
 
         <img 
-            src="${IMAGE_BASE + fileName}" 
+            src="${resolveUploadUrl(fileName)}" 
             style="max-width:90%; max-height:90%; border-radius:10px;"
             onerror="this.src='https://via.placeholder.com/400?text=No+Image'"
         >
@@ -1034,7 +1040,7 @@ function editRow(id, item) {
             <button onclick="captureInline(${id},1)">Capture</button>
 
             <img id="preview-${id}-1" width="80"
-                 src="${item.photo1 ? IMAGE_BASE + item.photo1 : ""}">
+                 src="${item.photo1 ? resolveUploadUrl(item.photo1) : ""}">
         </td>
 
         <!-- REMARK 1 -->
@@ -1047,7 +1053,7 @@ function editRow(id, item) {
             <button onclick="captureInline(${id},2)">Capture</button>
 
             <img id="preview-${id}-2" width="80"
-                 src="${item.photo2 ? IMAGE_BASE + item.photo2 : ""}">
+                 src="${item.photo2 ? resolveUploadUrl(item.photo2) : ""}">
         </td>
 
         <!-- REMARK 2 -->
