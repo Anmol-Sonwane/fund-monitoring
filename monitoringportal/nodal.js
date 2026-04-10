@@ -504,22 +504,38 @@ let stream = null;
 let photoBlob1 = null;
 let photoBlob2 = null;
 let currentLocation = "Fetching location...";
+let useFrontCamera = true; //changes1
 
 async function openCamera() {
     const video = document.getElementById("video");
 
-    if (!requireSecureCamera()) return;
-
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-
-        getLocation();
-    } catch (err) {
-        console.error(err);
-        alert("Camera error: " + (err.message || String(err)));
+    if (stream) {
+        stopCamera();
     }
+
+    const constraints = {
+        video: {
+            facingMode: useFrontCamera ? "user" : "environment"
+        }
+    };
+
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = stream;
+
+    getLocation();
 }
+//changes 2--
+function switchCamera() {
+    useFrontCamera = !useFrontCamera;
+
+    const btn = document.querySelector(".switch-btn");
+    if (btn) {
+        btn.innerText = useFrontCamera ? "Front Camera" : "Back Camera";
+    }
+
+    openCamera();
+}
+//Changes 3-
 
 // ==============================
 // CAPTURE PHOTO WITH STAMP
@@ -1058,6 +1074,7 @@ function editRow(id, item) {
         <!-- PHOTO 1 -->
         <td>
             <button onclick="openCameraInline(${id},1)">📷</button>
+			<button onclick="switchCameraInline(${id})">🔁</button>
             <video id="video-${id}" width="100" autoplay></video>
             <button onclick="captureInline(${id},1)">Capture</button>
 
@@ -1156,25 +1173,45 @@ async function loadHostelNamesEdit(id, nodalName) {
 let rowStreams = {};
 let rowPhoto1 = {};
 let rowPhoto2 = {};
+let rowCameraMode = {};
 
 async function openCameraInline(id, index) {
 
-    const video = document.getElementById(`video-${id}`);
+    const video = document.getElementById(video-${id});
 
-    if (!requireSecureCamera()) return;
-
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-
-        rowStreams[id] = stream;
-
-        getLocation();
-    } catch (err) {
-        console.error(err);
-        alert("Camera error: " + (err.message || String(err)));
+    // 🔥 stop old stream if exists
+    if (rowStreams[id]) {
+        rowStreams[id].getTracks().forEach(track => track.stop());
     }
+
+    // 🔥 default mode (front)
+    if (rowCameraMode[id] === undefined) {
+        rowCameraMode[id] = true; // true = front
+    }
+
+    const constraints = {
+        video: {
+            facingMode: rowCameraMode[id] ? "user" : "environment"
+        }
+    };
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = stream;
+
+    rowStreams[id] = stream;
+
+    getLocation();
+} //changes 2
+
+async function switchCameraInline(id) {
+
+    // 🔁 toggle camera
+    rowCameraMode[id] = !rowCameraMode[id];
+
+    // reopen camera
+    await openCameraInline(id);
 }
+//changes 3
 
 function captureInline(id, index) {
 
