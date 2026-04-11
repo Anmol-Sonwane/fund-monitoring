@@ -1,27 +1,5 @@
-const BASE_URL = "/api/Nodel";
-const BASE = "/api/Nodelentry";
-
-/** DB returns /uploads/... — do not prefix with "/", or the browser resolves //uploads/... incorrectly. */
-function resolveUploadUrl(path) {
-  if (path == null || path === "") return "";
-  const s = String(path).trim();
-  return s.startsWith("/") ? s : "/" + s;
-}
-
-function requireSecureCamera() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    alert("Camera is not supported in this browser.");
-    return false;
-  }
-  if (!window.isSecureContext) {
-    alert(
-      "Camera and GPS stamping require HTTPS on this server. Plain http:// works only on localhost for development.\n\n" +
-        "Serve the app with SSL (https://) or use a reverse proxy with a certificate."
-    );
-    return false;
-  }
-  return true;
-}
+const BASE_URL = "https://localhost:7117/api/Nodel"; 
+const BASE = "https://localhost:7117/api/Nodelentry";// change if needed
 
 // Form Submit Event
 document.getElementById("nodalForm").addEventListener("submit", async function (e) {
@@ -89,7 +67,7 @@ document.getElementById("importBtn").addEventListener("click", async function ()
     formData.append("file", file);
 
     try {
-        const response = await fetch("/api/Nodel/ImportExcel", {
+        const response = await fetch("https://localhost:7117/api/Nodel/ImportExcel", {
             method: "POST",
             body: formData
         });
@@ -107,7 +85,7 @@ document.getElementById("importBtn").addEventListener("click", async function ()
     }
 });
 
-const VIEW_API = "/api/Nodel";
+const VIEW_API = "https://localhost:7117/api/Nodel";
 
 // ================= OPEN VIEW MODAL =================
 async function openviewNodalModal() {
@@ -271,7 +249,7 @@ async function saveRow(btn, id) {
         totalSeat: parseInt(inputs[3].value)
     };
 
-    const response = await fetch(`/api/Nodel/Update/${id}`, {
+    const response = await fetch(`https://localhost:7117/api/Nodel/Update/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -504,38 +482,15 @@ let stream = null;
 let photoBlob1 = null;
 let photoBlob2 = null;
 let currentLocation = "Fetching location...";
-let useFrontCamera = true; //changes1
 
 async function openCamera() {
     const video = document.getElementById("video");
 
-    if (stream) {
-        stopCamera();
-    }
-
-    const constraints = {
-        video: {
-            facingMode: useFrontCamera ? "user" : "environment"
-        }
-    };
-
-    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = stream;
 
     getLocation();
 }
-//changes 2--
-function switchCamera() {
-    useFrontCamera = !useFrontCamera;
-
-    const btn = document.querySelector(".switch-btn");
-    if (btn) {
-        btn.innerText = useFrontCamera ? "Front Camera" : "Back Camera";
-    }
-
-    openCamera();
-}
-//Changes 3-
 
 // ==============================
 // CAPTURE PHOTO WITH STAMP
@@ -930,7 +885,7 @@ function renderViewTable(data) {
     ${
         item.photo1 
         ? `<img 
-                src="${resolveUploadUrl(item.photo1)}" 
+                src="${IMAGE_BASE + item.photo1}" 
                 width="80" 
                 height="60"
                 style="object-fit:cover; border-radius:5px; cursor:pointer;"
@@ -947,7 +902,7 @@ function renderViewTable(data) {
     ${
         item.photo2 
         ? `<img 
-                src="${resolveUploadUrl(item.photo2)}" 
+                src="${IMAGE_BASE + item.photo2}" 
                 width="80" 
                 height="60"
                 style="object-fit:cover; border-radius:5px; cursor:pointer;"
@@ -972,6 +927,7 @@ function renderViewTable(data) {
     viewTableSection.innerHTML = html;
 }
  
+const IMAGE_BASE = "https://localhost:7117/";
 function viewImage(fileName) {
 
     const modalHtml = `
@@ -987,7 +943,7 @@ function viewImage(fileName) {
     " onclick="this.remove()">
 
         <img 
-            src="${resolveUploadUrl(fileName)}" 
+            src="${IMAGE_BASE + fileName}" 
             style="max-width:90%; max-height:90%; border:5px solid white;"
             onerror="this.src='https://via.placeholder.com/300?text=No+Image'"
         >
@@ -1023,7 +979,7 @@ function openFullImage(fileName) {
         " onclick="this.parentElement.remove()">✖</span>
 
         <img 
-            src="${resolveUploadUrl(fileName)}" 
+            src="${IMAGE_BASE + fileName}" 
             style="max-width:90%; max-height:90%; border-radius:10px;"
             onerror="this.src='https://via.placeholder.com/400?text=No+Image'"
         >
@@ -1074,12 +1030,11 @@ function editRow(id, item) {
         <!-- PHOTO 1 -->
         <td>
             <button onclick="openCameraInline(${id},1)">📷</button>
-			<button onclick="switchCameraInline(${id})">🔁</button>
             <video id="video-${id}" width="100" autoplay></video>
             <button onclick="captureInline(${id},1)">Capture</button>
 
             <img id="preview-${id}-1" width="80"
-                 src="${item.photo1 ? resolveUploadUrl(item.photo1) : ""}">
+                 src="${item.photo1 ? IMAGE_BASE + item.photo1 : ""}">
         </td>
 
         <!-- REMARK 1 -->
@@ -1092,7 +1047,7 @@ function editRow(id, item) {
             <button onclick="captureInline(${id},2)">Capture</button>
 
             <img id="preview-${id}-2" width="80"
-                 src="${item.photo2 ? resolveUploadUrl(item.photo2) : ""}">
+                 src="${item.photo2 ? IMAGE_BASE + item.photo2 : ""}">
         </td>
 
         <!-- REMARK 2 -->
@@ -1173,45 +1128,18 @@ async function loadHostelNamesEdit(id, nodalName) {
 let rowStreams = {};
 let rowPhoto1 = {};
 let rowPhoto2 = {};
-let rowCameraMode = {};
 
 async function openCameraInline(id, index) {
 
-    const video = document.getElementById(video-${id});
+    const video = document.getElementById(`video-${id}`);
 
-    // 🔥 stop old stream if exists
-    if (rowStreams[id]) {
-        rowStreams[id].getTracks().forEach(track => track.stop());
-    }
-
-    // 🔥 default mode (front)
-    if (rowCameraMode[id] === undefined) {
-        rowCameraMode[id] = true; // true = front
-    }
-
-    const constraints = {
-        video: {
-            facingMode: rowCameraMode[id] ? "user" : "environment"
-        }
-    };
-
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = stream;
 
     rowStreams[id] = stream;
 
     getLocation();
-} //changes 2
-
-async function switchCameraInline(id) {
-
-    // 🔁 toggle camera
-    rowCameraMode[id] = !rowCameraMode[id];
-
-    // reopen camera
-    await openCameraInline(id);
 }
-//changes 3
 
 function captureInline(id, index) {
 
