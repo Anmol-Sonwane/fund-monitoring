@@ -361,14 +361,14 @@ gap:12px;
 
 
 #nodalName {
-    position: absolute;
+    position: static;
     top: 100%;     /* 👈 KEY FIX */
     left: 0;
     width: 100%;
     max-height: 150px;
     border: 1px solid #ccc;
     background: #fff;
-    display: none;
+    display: block;
     z-index: 99999;   /* 👈 increase */
     overflow-y: auto;
 }
