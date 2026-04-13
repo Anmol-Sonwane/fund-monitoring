@@ -1098,7 +1098,7 @@ async function openMonthlyCamera() {
         if (!requireSecureCamera()) return;
 
         monthlyStream = await navigator.mediaDevices.getUserMedia({
-            video: true
+           video: { facingMode: "environment" }
         });
 
         const video = document.getElementById("monthlyVideo");
