@@ -1,5 +1,5 @@
-const BASE_URL = "https://localhost:7117/api/Nodel"; 
-const BASE = "https://localhost:7117/api/Nodelentry";// change if needed
+const BASE_URL = "/api/Nodel"; 
+const BASE = "/api/Nodelentry";// change if needed
 
 // Form Submit Event
 document.getElementById("nodalForm").addEventListener("submit", async function (e) {
