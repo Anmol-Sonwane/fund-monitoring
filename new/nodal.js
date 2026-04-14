@@ -1,5 +1,5 @@
-const BASE_URL = "https://localhost:7117/api/Nodel"; 
-const BASE = "https://localhost:7117/api/Nodelentry";// change if needed
+const BASE_URL = "/api/Nodel"; 
+const BASE = "/api/Nodelentry";// change if needed
 
 // Form Submit Event
 document.getElementById("nodalForm").addEventListener("submit", async function (e) {
@@ -67,7 +67,7 @@ document.getElementById("importBtn").addEventListener("click", async function ()
     formData.append("file", file);
 
     try {
-        const response = await fetch("https://localhost:7117/api/Nodel/ImportExcel", {
+        const response = await fetch("/api/Nodel/ImportExcel", {
             method: "POST",
             body: formData
         });
@@ -85,7 +85,7 @@ document.getElementById("importBtn").addEventListener("click", async function ()
     }
 });
 
-const VIEW_API = "https://localhost:7117/api/Nodel";
+const VIEW_API = "/api/Nodel";
 
 // ================= OPEN VIEW MODAL =================
 async function openviewNodalModal() {
@@ -249,7 +249,7 @@ async function saveRow(btn, id) {
         totalSeat: parseInt(inputs[3].value)
     };
 
-    const response = await fetch(`https://localhost:7117/api/Nodel/Update/${id}`, {
+    const response = await fetch(`/api/Nodel/Update/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -977,7 +977,7 @@ function renderViewTable(data) {
     viewTableSection.innerHTML = html;
 }
  
-const IMAGE_BASE = "https://localhost:7117/";
+const IMAGE_BASE = "/";
 function viewImage(fileName) {
 
     const modalHtml = `
