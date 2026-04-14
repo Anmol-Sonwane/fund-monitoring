@@ -49,6 +49,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./fundmonitoringnew_backup.sql:/docker-entrypoint-initdb.d/01-backup.sql:ro
     healthcheck:
       test:
         [
